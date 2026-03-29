@@ -19,11 +19,11 @@ export const equipmentList = [
 ];
 
 export const requests = [
-  { id: "REQ-001", equipment: "MRI Scanner", from: "LASUTH Ikeja", to: "Lagos University Teaching Hospital", status: "pending" as const, date: "2026-03-28", quantity: 1 },
-  { id: "REQ-002", equipment: "Ventilator", from: "National Hospital Abuja", to: "UCH Ibadan", status: "approved" as const, date: "2026-03-27", quantity: 2 },
-  { id: "REQ-003", equipment: "CT Scanner", from: "PathCare Laboratories", to: "National Hospital Abuja", status: "rejected" as const, date: "2026-03-26", quantity: 1 },
-  { id: "REQ-004", equipment: "Ultrasound Machine", from: "Clina Lancet Laboratories", to: "LASUTH Ikeja", status: "approved" as const, date: "2026-03-25", quantity: 1 },
-  { id: "REQ-005", equipment: "Defibrillator", from: "UCH Ibadan", to: "Lagos University Teaching Hospital", status: "pending" as const, date: "2026-03-29", quantity: 3 },
+  { id: "REQ-001", equipment: "MRI Scanner", from: "LASUTH Ikeja", to: "Lagos University Teaching Hospital", status: "pending" as const, date: "2026-03-28", quantity: 1, results: null as string | null },
+  { id: "REQ-002", equipment: "Ventilator", from: "National Hospital Abuja", to: "UCH Ibadan", status: "approved" as const, date: "2026-03-27", quantity: 2, results: null as string | null },
+  { id: "REQ-003", equipment: "CT Scanner", from: "PathCare Laboratories", to: "National Hospital Abuja", status: "rejected" as const, date: "2026-03-26", quantity: 1, results: null as string | null },
+  { id: "REQ-004", equipment: "Ultrasound Machine", from: "Clina Lancet Laboratories", to: "LASUTH Ikeja", status: "results-sent" as const, date: "2026-03-25", quantity: 1, results: "Patient ultrasound imaging completed. No abnormalities detected. Full report attached." as string | null },
+  { id: "REQ-005", equipment: "Defibrillator", from: "UCH Ibadan", to: "Lagos University Teaching Hospital", status: "pending" as const, date: "2026-03-29", quantity: 3, results: null as string | null },
 ];
 
 export const recommendations = [
