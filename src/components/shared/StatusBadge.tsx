@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 
-type Status = "pending" | "approved" | "rejected" | "available" | "in-use" | "maintenance";
+type Status = "pending" | "approved" | "rejected" | "available" | "in-use" | "maintenance" | "results-sent";
 
 const statusStyles: Record<Status, string> = {
   pending: "bg-warning/15 text-warning border-warning/30",
@@ -9,6 +9,7 @@ const statusStyles: Record<Status, string> = {
   available: "bg-success/15 text-success border-success/30",
   "in-use": "bg-accent/15 text-accent border-accent/30",
   maintenance: "bg-warning/15 text-warning border-warning/30",
+  "results-sent": "bg-primary/15 text-primary border-primary/30",
 };
 
 interface StatusBadgeProps {
