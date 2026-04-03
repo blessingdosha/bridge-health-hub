@@ -25,7 +25,7 @@ import {
 } from "@/components/ui/sidebar";
 
 const mainItems = [
-  { title: "Dashboard", url: "/", icon: LayoutDashboard },
+  { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
   { title: "Facilities", url: "/facilities", icon: Building2 },
   { title: "Equipment", url: "/equipment", icon: Stethoscope },
   { title: "Requests", url: "/requests", icon: ClipboardList },
@@ -65,7 +65,7 @@ export function AppSidebar() {
                   <SidebarMenuButton asChild>
                     <NavLink
                       to={item.url}
-                      end={item.url === "/"}
+                      end={item.url === "/dashboard"}
                       className="hover:bg-sidebar-accent/60"
                       activeClassName="bg-sidebar-accent text-sidebar-accent-foreground font-medium"
                     >
