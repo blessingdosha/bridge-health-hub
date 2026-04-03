@@ -52,7 +52,7 @@ const App = () => (
                 <ProtectedRoute>
                   <DashboardLayout>
                     <Routes>
-                      <Route path="/" element={<Index />} />
+                      <Route path="/dashboard" element={<Index />} />
                       <Route path="/facilities" element={<Facilities />} />
                       <Route path="/equipment" element={<Equipment />} />
                       <Route path="/requests" element={<Requests />} />

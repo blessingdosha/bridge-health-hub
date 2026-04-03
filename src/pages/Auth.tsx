@@ -1,18 +1,25 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { supabase } from '@/lib/supabase';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { toast } from 'sonner';
-import { Heart, Mail, Lock, User, ArrowRight } from 'lucide-react';
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { apiFetch } from "@/lib/api";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { toast } from "sonner";
+import { Heart, Mail, Lock, User, ArrowRight } from "lucide-react";
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [fullName, setFullName] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [fullName, setFullName] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
@@ -20,12 +27,12 @@ const Auth = () => {
     e.preventDefault();
 
     if (!email.trim() || !password.trim()) {
-      toast.error('Please fill in all fields');
+      toast.error("Please fill in all fields");
       return;
     }
 
     if (password.length < 6) {
-      toast.error('Password must be at least 6 characters');
+      toast.error("Password must be at least 6 characters");
       return;
     }
 
@@ -33,29 +40,48 @@ const Auth = () => {
 
     try {
       if (isLogin) {
-        const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
-        if (error) throw error;
-        toast.success('Welcome back!');
-        navigate('/');
+        // Backend login
+        const data = await apiFetch("/api/auth/login", {
+          method: "POST",
+          body: JSON.stringify({ email: email.trim(), password }),
+        });
+        if (data.token) {
+          localStorage.setItem("authToken", data.token);
+          if (data.user) {
+            localStorage.setItem("authUser", JSON.stringify(data.user));
+          }
+          toast.success("Welcome back!");
+          navigate("/dashboard");
+        } else {
+          throw new Error(data.message || "Login failed");
+        }
       } else {
         if (!fullName.trim()) {
-          toast.error('Please enter your full name');
+          toast.error("Please enter your full name");
           setLoading(false);
           return;
         }
-        const { error } = await supabase.auth.signUp({
-          email: email.trim(),
-          password,
-          options: {
-            data: { full_name: fullName.trim() },
-            emailRedirectTo: window.location.origin,
-          },
+        // Backend register
+        const data = await apiFetch("/api/auth/register", {
+          method: "POST",
+          body: JSON.stringify({
+            name: fullName.trim(),
+            email: email.trim(),
+            password,
+            role: "user", // or another role as needed
+          }),
         });
-        if (error) throw error;
-        toast.success('Account created! Check your email to verify.');
+        if (data.token) {
+          localStorage.setItem("authToken", data.token);
+          if (data.user) {
+            localStorage.setItem("authUser", JSON.stringify(data.user));
+          }
+        }
+        toast.success(data.message || "Account created!");
+        navigate("/dashboard");
       }
     } catch (error: any) {
-      toast.error(error.message || 'Authentication failed');
+      toast.error(error.message || "Authentication failed");
     } finally {
       setLoading(false);
     }
@@ -69,19 +95,23 @@ const Auth = () => {
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-accent mb-4">
             <Heart className="w-8 h-8 text-accent-foreground" />
           </div>
-          <h1 className="text-3xl font-bold text-primary-foreground">MedBridge</h1>
-          <p className="text-primary-foreground/70 mt-1">Hospital-to-Hospital Collaboration</p>
+          <h1 className="text-3xl font-bold text-primary-foreground">
+            MedBridge
+          </h1>
+          <p className="text-primary-foreground/70 mt-1">
+            Hospital-to-Hospital Collaboration
+          </p>
         </div>
 
         <Card className="border-0 shadow-2xl">
           <CardHeader className="space-y-1 pb-4">
             <CardTitle className="text-2xl font-semibold text-center">
-              {isLogin ? 'Welcome back' : 'Create an account'}
+              {isLogin ? "Welcome back" : "Create an account"}
             </CardTitle>
             <CardDescription className="text-center">
               {isLogin
-                ? 'Sign in to access your dashboard'
-                : 'Get started with MedBridge today'}
+                ? "Sign in to access your dashboard"
+                : "Get started with MedBridge today"}
             </CardDescription>
           </CardHeader>
 
@@ -138,23 +168,32 @@ const Auth = () => {
             </CardContent>
 
             <CardFooter className="flex flex-col gap-4">
-              <Button type="submit" className="w-full" size="lg" disabled={loading}>
-                {loading ? 'Please wait...' : (
+              <Button
+                type="submit"
+                className="w-full"
+                size="lg"
+                disabled={loading}
+              >
+                {loading ? (
+                  "Please wait..."
+                ) : (
                   <>
-                    {isLogin ? 'Sign In' : 'Create Account'}
+                    {isLogin ? "Sign In" : "Create Account"}
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </>
                 )}
               </Button>
 
               <p className="text-sm text-muted-foreground text-center">
-                {isLogin ? "Don't have an account?" : 'Already have an account?'}{' '}
+                {isLogin
+                  ? "Don't have an account?"
+                  : "Already have an account?"}{" "}
                 <button
                   type="button"
                   onClick={() => setIsLogin(!isLogin)}
                   className="text-accent font-medium hover:underline"
                 >
-                  {isLogin ? 'Sign up' : 'Sign in'}
+                  {isLogin ? "Sign up" : "Sign in"}
                 </button>
               </p>
             </CardFooter>
