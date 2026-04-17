@@ -24,19 +24,22 @@ export async function apiFetch(
     let status = res.status;
     try {
       const data = await res.json();
-      errorMsg = data.message || JSON.stringify(data);
+      errorMsg = data.error || data.message || JSON.stringify(data);
       // Check for invalid/expired token errors (customize as needed)
       if (
         status === 401 ||
         errorMsg.toLowerCase().includes("token") ||
         errorMsg.toLowerCase().includes("unauthorized")
       ) {
-        // Remove auth info and redirect to login
+        // Remove auth info
         localStorage.removeItem("authToken");
         localStorage.removeItem("authUser");
-        window.location.replace("/auth");
-        // Prevent further execution
-        return;
+        
+        // Only redirect if we are not already on the auth page
+        if (window.location.pathname !== "/auth") {
+          window.location.replace("/auth");
+          return; // Prevent further execution
+        }
       }
     } catch (e) {
       // ignore JSON parse error
