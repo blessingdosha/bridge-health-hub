@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Search, Plus, Pencil, Trash2 } from "lucide-react";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { StatusBadge } from "@/components/shared/StatusBadge";
@@ -24,6 +25,7 @@ import { Label } from "@/components/ui/label";
 import { apiFetch } from "@/lib/api";
 
 const Equipment = () => {
+  const [searchParams] = useSearchParams();
   const [search, setSearch] = useState("");
   const [equipment, setEquipment] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -35,6 +37,11 @@ const Equipment = () => {
   const [newAvailability, setNewAvailability] = useState("available");
   const [facilities, setFacilities] = useState([]);
   const [adding, setAdding] = useState(false);
+
+  useEffect(() => {
+    const q = searchParams.get("q");
+    if (q) setSearch(q);
+  }, [searchParams]);
 
   useEffect(() => {
     const fetchEquipment = async () => {
@@ -63,7 +70,9 @@ const Equipment = () => {
   const filtered = equipment.filter(
     (e: any) =>
       e.name.toLowerCase().includes(search.toLowerCase()) ||
-      (e.hospital_name?.toLowerCase?.() || "").includes(search.toLowerCase()),
+      (e.facility_name?.toLowerCase?.() || "").includes(
+        search.toLowerCase(),
+      ),
   );
 
   const handleAddEquipment = async () => {

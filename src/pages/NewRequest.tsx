@@ -14,7 +14,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { apiFetch } from "@/lib/api";
 
 interface FacilityOption {
@@ -34,6 +34,7 @@ interface EquipmentOption {
 const NewRequest = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
+  const location = useLocation();
   const [equipment, setEquipment] = useState<EquipmentOption[]>([]);
   const [facilities, setFacilities] = useState<FacilityOption[]>([]);
   const [loading, setLoading] = useState(false);
@@ -78,6 +79,22 @@ const NewRequest = () => {
 
     fetchFormData();
   }, []);
+
+  const recommendedFacilityName =
+    (location.state as { recommendedFacilityName?: string } | null)
+      ?.recommendedFacilityName ?? null;
+
+  useEffect(() => {
+    if (!recommendedFacilityName || facilities.length === 0) return;
+    const match = facilities.find(
+      (f) =>
+        f.name.toLowerCase().trim() ===
+        recommendedFacilityName.toLowerCase().trim(),
+    );
+    if (match) {
+      setToFacility(String(match.id));
+    }
+  }, [recommendedFacilityName, facilities]);
 
   useEffect(() => {
     if (!equipmentId) return;
