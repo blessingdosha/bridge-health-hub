@@ -52,6 +52,10 @@ const App = () => (
                 <ProtectedRoute>
                   <DashboardLayout>
                     <Routes>
+                      <Route
+                        path="/"
+                        element={<Navigate to="/dashboard" replace />}
+                      />
                       <Route path="/dashboard" element={<Index />} />
                       <Route path="/facilities" element={<Facilities />} />
                       <Route path="/equipment" element={<Equipment />} />
