@@ -29,7 +29,10 @@ function initialsFromName(name: string) {
 const Profile = () => {
   const { user } = useAuth();
   const displayName = user?.name?.trim() || "Signed-in user";
-  const { first, last } = splitDisplayName(displayName);
+  const first =
+    user?.first_name?.trim() || splitDisplayName(displayName).first;
+  const last =
+    user?.last_name?.trim() || splitDisplayName(displayName).last;
   const email = user?.email || "";
   const role = user?.role || "";
 
@@ -78,32 +81,33 @@ const Profile = () => {
 
         <Card>
           <CardHeader>
-            <CardTitle>Hospital Affiliation</CardTitle>
+            <CardTitle>Hospital affiliation</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="grid gap-2 sm:col-span-2">
                 <Label>Hospital</Label>
-                <Input placeholder="Link to facility directory in a future release" disabled />
+                <Input
+                  readOnly
+                  value={user?.hospital_name?.trim() || "—"}
+                  placeholder="Not linked to a hospital account"
+                />
               </div>
               <div className="grid gap-2">
-                <Label>Department</Label>
-                <Input placeholder="—" disabled />
-              </div>
-              <div className="grid gap-2">
-                <Label>Role</Label>
-                <Input defaultValue={role} readOnly />
+                <Label>App role</Label>
+                <Input defaultValue={role} readOnly className="capitalize" />
               </div>
               <div className="grid gap-2 sm:col-span-2">
-                <Label>License Number</Label>
-                <Input placeholder="—" disabled />
+                <Label>Hospital license (org)</Label>
+                <Input
+                  readOnly
+                  value={user?.hospital_license_number?.trim() || "—"}
+                />
               </div>
             </div>
-            <Button type="button" disabled variant="secondary">
-              Save Changes
-            </Button>
             <p className="text-xs text-muted-foreground">
-              Profile editing will connect to the backend when user profile endpoints are available.
+              Hospital details come from your organization registration. Contact your hospital admin
+              for corrections.
             </p>
           </CardContent>
         </Card>
