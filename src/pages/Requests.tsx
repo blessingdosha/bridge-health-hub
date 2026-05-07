@@ -6,6 +6,7 @@ import {
   CheckCircle2,
   CalendarClock,
   Download,
+  Plus,
 } from "lucide-react";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { StatusBadge } from "@/components/shared/StatusBadge";
@@ -177,7 +178,12 @@ const Requests = () => {
         title="Request Tracking"
         description="Track and manage equipment requests"
       >
-        <div className="flex gap-1 flex-wrap">
+        <div className="flex gap-1 flex-wrap items-center">
+          <Button size="sm" className="gap-1.5 text-xs" asChild>
+            <Link to="/requests/new">
+              <Plus className="h-3.5 w-3.5" /> Add Request
+            </Link>
+          </Button>
           {(
             [
               "all",

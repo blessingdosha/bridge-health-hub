@@ -8,6 +8,7 @@ import { AppAuthGate } from "@/components/auth/AppAuthGate";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import Index from "./pages/Index";
 import Facilities from "./pages/Facilities";
+import HospitalDetail from "./pages/HospitalDetail";
 import Equipment from "./pages/Equipment";
 import Requests from "./pages/Requests";
 import RequestPatientVisit from "./pages/RequestPatientVisit";
@@ -53,6 +54,7 @@ const App = () => (
                       <Route path="/" element={<Navigate to="/dashboard" replace />} />
                       <Route path="/dashboard" element={<Index />} />
                       <Route path="/facilities" element={<Facilities />} />
+                      <Route path="/hospitals/:id" element={<HospitalDetail />} />
                       <Route path="/equipment" element={<Equipment />} />
                       <Route path="/requests" element={<Requests />} />
                       <Route path="/requests/new" element={<NewRequest />} />

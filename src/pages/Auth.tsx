@@ -5,14 +5,6 @@ import { useAuth, type UserInfo } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { toast } from "sonner";
 import { Heart, Mail, Lock, User, ArrowRight, Building2 } from "lucide-react";
 
@@ -40,6 +32,8 @@ const Auth = () => {
   const [lastName, setLastName] = useState("");
   const [hospitalName, setHospitalName] = useState("");
   const [hospitalLocation, setHospitalLocation] = useState("");
+  const [hospitalCity, setHospitalCity] = useState("");
+  const [hospitalState, setHospitalState] = useState("");
   const [hospitalContactEmail, setHospitalContactEmail] = useState("");
   const [hospitalPhone, setHospitalPhone] = useState("");
   const [licenseNumber, setLicenseNumber] = useState("");
@@ -113,7 +107,14 @@ const Auth = () => {
             password,
             hospital: {
               name: hospitalName.trim(),
-              location: hospitalLocation.trim() || null,
+              location:
+                hospitalLocation.trim() ||
+                [hospitalCity.trim(), hospitalState.trim()]
+                  .filter(Boolean)
+                  .join(", ") ||
+                null,
+              city: hospitalCity.trim() || null,
+              state: hospitalState.trim() || null,
               contact_email: hospitalContactEmail.trim() || email.trim(),
               contact_phone: hospitalPhone.trim() || null,
               license_number: licenseNumber.trim(),
@@ -143,35 +144,26 @@ const Auth = () => {
   }
 
   return (
-    <div className="min-h-screen bg-primary flex items-center justify-center p-4">
-      <div className="w-full max-w-md max-h-[95vh] overflow-y-auto">
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-accent mb-4">
-            <Heart className="h-8 w-8 text-accent-foreground" />
-          </div>
-          <h1 className="text-3xl font-bold text-primary-foreground">MedBridge</h1>
-          <p className="text-primary-foreground/70 mt-1">
-            Hospital-to-Hospital Collaboration
-          </p>
-        </div>
+    <div className="min-h-screen bg-white">
+      <div className="grid min-h-screen grid-cols-1 lg:grid-cols-2">
+        <div className="flex items-center justify-center px-6 py-10 md:px-12 lg:px-16">
+          <div className="w-full max-w-md">
+            <div className="mb-8">
+              <div className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-primary/10 mb-3">
+                <Heart className="h-5 w-5 text-primary" />
+              </div>
+              <h1 className="text-3xl font-bold">MedBridge</h1>
+              <p className="text-sm text-muted-foreground mt-1">
+                {isLogin
+                  ? "Secure access to your hospital collaboration workspace"
+                  : "Create your hospital account and submit for approval"}
+              </p>
+            </div>
 
-        <Card className="border-0 shadow-2xl">
-          <CardHeader className="space-y-1 pb-4">
-            <CardTitle className="text-2xl font-semibold text-center">
-              {isLogin ? "Welcome back" : "Register your hospital"}
-            </CardTitle>
-            <CardDescription className="text-center">
-              {isLogin
-                ? "Sign in to access your dashboard"
-                : "Create the founding admin account and submit your facility for approval"}
-            </CardDescription>
-          </CardHeader>
-
-          <form onSubmit={handleSubmit}>
-            <CardContent className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-4">
               {!isLogin && (
                 <>
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="fn">First name</Label>
                       <div className="relative">
@@ -222,10 +214,30 @@ const Auth = () => {
                     <Label htmlFor="hloc">Location (optional)</Label>
                     <Input
                       id="hloc"
-                      placeholder="City, region"
+                      placeholder="District / landmark"
                       value={hospitalLocation}
                       onChange={(e) => setHospitalLocation(e.target.value)}
                     />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="hcity">City</Label>
+                      <Input
+                        id="hcity"
+                        placeholder="Abuja"
+                        value={hospitalCity}
+                        onChange={(e) => setHospitalCity(e.target.value)}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="hstate">State</Label>
+                      <Input
+                        id="hstate"
+                        placeholder="FCT"
+                        value={hospitalState}
+                        onChange={(e) => setHospitalState(e.target.value)}
+                      />
+                    </div>
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="hcemail">Hospital contact email (optional)</Label>
@@ -241,7 +253,7 @@ const Auth = () => {
                     <Label htmlFor="hphone">Hospital phone (optional)</Label>
                     <Input
                       id="hphone"
-                      placeholder="+234 …"
+                      placeholder="+234..."
                       value={hospitalPhone}
                       onChange={(e) => setHospitalPhone(e.target.value)}
                     />
@@ -281,40 +293,62 @@ const Auth = () => {
                 </div>
                 {!isLogin && (
                   <p className="text-xs text-muted-foreground">
-                    At least 8 characters. You will be the hospital administrator once approved.
+                    At least 8 characters. You will become hospital admin once approved.
                   </p>
                 )}
               </div>
-            </CardContent>
 
-            <CardFooter className="flex flex-col gap-4">
-              <Button type="submit" className="w-full" size="lg" disabled={loading}>
-                {loading ? (
-                  "Please wait..."
-                ) : (
-                  <>
-                    {isLogin ? "Sign In" : "Submit registration"}
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </>
-                )}
-              </Button>
+              <div className="pt-3 space-y-4">
+                <Button type="submit" className="w-full" size="lg" disabled={loading}>
+                  {loading ? (
+                    "Please wait..."
+                  ) : (
+                    <>
+                      {isLogin ? "Sign In" : "Submit registration"}
+                      <ArrowRight className="ml-2 h-4 w-4" />
+                    </>
+                  )}
+                </Button>
 
-              <p className="text-sm text-muted-foreground text-center">
-                {isLogin ? "Need to register your hospital?" : "Already have an account?"}{" "}
-                <button
-                  type="button"
-                  onClick={() => {
-                    setIsLogin(!isLogin);
-                    setPassword("");
-                  }}
-                  className="text-accent font-medium hover:underline"
-                >
-                  {isLogin ? "Register hospital" : "Sign in"}
-                </button>
-              </p>
-            </CardFooter>
-          </form>
-        </Card>
+                <p className="text-sm text-muted-foreground text-center">
+                  {isLogin ? "Need to register your hospital?" : "Already have an account?"}{" "}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsLogin(!isLogin);
+                      setPassword("");
+                    }}
+                    className="text-primary font-medium hover:underline"
+                  >
+                    {isLogin ? "Register hospital" : "Sign in"}
+                  </button>
+                </p>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <div className="hidden lg:flex relative bg-[#1546b0] text-white overflow-hidden">
+          <div className="absolute inset-0">
+            <img
+              src="https://illustrations.popsy.co/white/designer.svg"
+              alt="Healthcare collaboration illustration"
+              className="h-[72%] w-[72%] max-h-[520px] max-w-[520px] object-contain opacity-90 mx-auto mt-14"
+            />
+          </div>
+          <div className="absolute inset-0 bg-[#1546b0]/35" />
+          <div className="relative z-10 h-full w-full flex flex-col justify-end p-10">
+            <h2 className="text-4xl font-bold leading-tight">
+              Discover Better
+              <br />
+              Hospital Collaboration
+            </h2>
+            <p className="text-sm text-white/90 mt-3 max-w-lg">
+              Coordinate referrals, request equipment, schedule patient visits,
+              and exchange reports in one trusted workspace.
+            </p>
+          </div>
+        </div>
       </div>
     </div>
   );

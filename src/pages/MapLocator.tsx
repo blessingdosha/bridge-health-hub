@@ -150,7 +150,7 @@ const MapLocator = () => {
     <div>
       <PageHeader
         title="Map Locator"
-        description="Hospitals and laboratories from your directory on an interactive map"
+        description="Approved hospitals in your network on an interactive map"
       >
         <div className="flex flex-wrap items-center gap-2">
           <Button
@@ -186,7 +186,7 @@ const MapLocator = () => {
 
       {geoStatus === "denied" && (
         <p className="text-sm text-muted-foreground mb-3">
-          Location access was blocked or unavailable. Showing all mapped sites,
+          Location access was blocked or unavailable. Showing all hospitals,
           centered on the default region. You can still browse the list.
         </p>
       )}
@@ -215,14 +215,14 @@ const MapLocator = () => {
           <p className="text-sm font-medium text-muted-foreground">
             {userPosition
               ? `Within ~${NEARBY_MI} mi of you`
-              : "All mapped sites"}
+              : "All mapped hospitals"}
           </p>
           {!loading && !error && sortedForList.length === 0 && (
             <Card>
               <CardContent className="p-6 text-center text-sm text-muted-foreground">
                 <MapPin className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                No sites with coordinates found. Add latitude and longitude when
-                registering hospitals or labs in the backend.
+                No hospitals with coordinates found. Add latitude and longitude
+                (or city/state) when registering hospitals.
               </CardContent>
             </Card>
           )}

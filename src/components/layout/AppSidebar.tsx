@@ -29,7 +29,7 @@ import { useAuth } from "@/contexts/AuthContext";
 
 const mainItems = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
-  { title: "Facilities", url: "/facilities", icon: Building2 },
+  { title: "Hospitals", url: "/facilities", icon: Building2 },
   { title: "Equipment", url: "/equipment", icon: Stethoscope },
   { title: "Requests", url: "/requests", icon: ClipboardList },
   { title: "Map Locator", url: "/map", icon: MapPin },

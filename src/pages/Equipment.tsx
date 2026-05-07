@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useSearchParams } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { Search, Plus, Pencil, Trash2 } from "lucide-react";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { StatusBadge } from "@/components/shared/StatusBadge";
@@ -33,9 +33,7 @@ const Equipment = () => {
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [newName, setNewName] = useState("");
   const [newType, setNewType] = useState("");
-  const [newFacility, setNewFacility] = useState("");
   const [newAvailability, setNewAvailability] = useState("available");
-  const [facilities, setFacilities] = useState([]);
   const [adding, setAdding] = useState(false);
 
   useEffect(() => {
@@ -57,14 +55,6 @@ const Equipment = () => {
       }
     };
     fetchEquipment();
-    // Fetch facilities for dropdown
-    const fetchFacilities = async () => {
-      try {
-        const data = await apiFetch("/api/facilities");
-        setFacilities(data);
-      } catch {}
-    };
-    fetchFacilities();
   }, []);
 
   const filtered = equipment.filter(
@@ -76,8 +66,7 @@ const Equipment = () => {
   );
 
   const handleAddEquipment = async () => {
-    if (!newName.trim() || !newType.trim() || !newFacility || !newAvailability)
-      return;
+    if (!newName.trim() || !newType.trim() || !newAvailability) return;
     setAdding(true);
     try {
       await apiFetch("/api/equipment/", {
@@ -85,7 +74,6 @@ const Equipment = () => {
         body: JSON.stringify({
           name: newName.trim(),
           type: newType.trim(),
-          facility_id: newFacility,
           availability: newAvailability === "available",
         }),
       });
@@ -95,7 +83,6 @@ const Equipment = () => {
       setAddDialogOpen(false);
       setNewName("");
       setNewType("");
-      setNewFacility("");
       setNewAvailability("available");
     } catch (err) {
       alert((err as Error).message || "Failed to add equipment");
@@ -108,7 +95,7 @@ const Equipment = () => {
     <div>
       <PageHeader
         title="Equipment"
-        description="Manage medical equipment across facilities"
+        description="Manage equipment under your hospital"
       >
         <Dialog open={addDialogOpen} onOpenChange={setAddDialogOpen}>
           <DialogTrigger asChild>
@@ -144,21 +131,6 @@ const Equipment = () => {
                   <option value="Surgical">Surgical</option>
                   <option value="Monitoring">Monitoring</option>
                   <option value="Other">Other</option>
-                </select>
-              </div>
-              <div className="grid gap-2">
-                <Label>Facility</Label>
-                <select
-                  value={newFacility}
-                  onChange={(e) => setNewFacility(e.target.value)}
-                  className="border rounded px-2 py-1"
-                >
-                  <option value="">Select facility</option>
-                  {facilities.map((f: any) => (
-                    <option key={f.id} value={f.id}>
-                      {f.name}
-                    </option>
-                  ))}
                 </select>
               </div>
               <div className="grid gap-2">
@@ -218,7 +190,16 @@ const Equipment = () => {
                   <TableRow key={item.id}>
                     <TableCell className="font-medium">{item.name}</TableCell>
                     <TableCell className="hidden md:table-cell">
-                      {item.facility_name || "N/A"}
+                      {item.hospital_id ? (
+                        <Link
+                          to={`/hospitals/${item.hospital_id}`}
+                          className="text-primary hover:underline"
+                        >
+                          {item.hospital_name || item.facility_name || "N/A"}
+                        </Link>
+                      ) : (
+                        item.hospital_name || item.facility_name || "N/A"
+                      )}
                     </TableCell>
                     <TableCell>{item.quantity}</TableCell>
                     <TableCell>
@@ -227,7 +208,7 @@ const Equipment = () => {
                           typeof item.availability === "boolean"
                             ? item.availability
                               ? "available"
-                              : "unavailable"
+                              : "maintenance"
                             : item.status || "available"
                         }
                       />
