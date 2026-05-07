@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Send } from "lucide-react";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { Button } from "@/components/ui/button";
@@ -17,7 +17,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useNavigate, useLocation } from "react-router-dom";
 import { apiFetch } from "@/lib/api";
 
-interface FacilityOption {
+interface HospitalOption {
   id: number | string;
   name: string;
 }
@@ -25,10 +25,8 @@ interface FacilityOption {
 interface EquipmentOption {
   id: number | string;
   name: string;
-  facility_id?: number | string;
-  hospital_id?: number | string;
-  lab_id?: number | string;
-  laboratory_id?: number | string;
+  hospital_id?: number | string | null;
+  hospital_name?: string | null;
 }
 
 const NewRequest = () => {
@@ -36,40 +34,35 @@ const NewRequest = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [equipment, setEquipment] = useState<EquipmentOption[]>([]);
-  const [facilities, setFacilities] = useState<FacilityOption[]>([]);
+  const [hospitals, setHospitals] = useState<HospitalOption[]>([]);
   const [loading, setLoading] = useState(false);
   const [bootstrapLoading, setBootstrapLoading] = useState(true);
   const [bootstrapError, setBootstrapError] = useState("");
 
   const [equipmentId, setEquipmentId] = useState("");
-  const [fromFacility, setFromFacility] = useState("");
-  const [toFacility, setToFacility] = useState("");
+  const [fromHospital, setFromHospital] = useState("");
   const [quantity, setQuantity] = useState(1);
   const [notes, setNotes] = useState("");
 
-  const filteredEquipment = fromFacility
-    ? equipment.filter((e) => {
-        const facilityId =
-          e.facility_id ?? e.hospital_id ?? e.lab_id ?? e.laboratory_id;
-        return String(facilityId) === fromFacility;
-      })
-    : equipment;
-
-  const toFacilityOptions = facilities.filter(
-    (f) => String(f.id) !== fromFacility,
-  );
+  const filteredEquipment = useMemo(() => {
+    if (!fromHospital) return equipment;
+    return equipment.filter(
+      (e) =>
+        e.hospital_id != null && String(e.hospital_id) === String(fromHospital),
+    );
+  }, [equipment, fromHospital]);
 
   useEffect(() => {
     const fetchFormData = async () => {
       setBootstrapLoading(true);
       setBootstrapError("");
       try {
-        const [equipmentData, facilitiesData] = await Promise.all([
+        const [equipmentData, hospitalsData] = await Promise.all([
           apiFetch("/api/equipment/available"),
-          apiFetch("/api/facilities"),
+          apiFetch("/api/hospitals"),
         ]);
-        setEquipment(equipmentData);
-        setFacilities(facilitiesData);
+        setEquipment(Array.isArray(equipmentData) ? equipmentData : []);
+        setHospitals(Array.isArray(hospitalsData) ? hospitalsData : []);
       } catch (err) {
         setBootstrapError((err as Error).message || "Failed to load form data");
       } finally {
@@ -80,54 +73,36 @@ const NewRequest = () => {
     fetchFormData();
   }, []);
 
-  const recommendedFacilityName =
-    (location.state as { recommendedFacilityName?: string } | null)
-      ?.recommendedFacilityName ?? null;
+  const recommendedHospitalName =
+    (location.state as { recommendedHospitalName?: string } | null)
+      ?.recommendedHospitalName ?? null;
 
   useEffect(() => {
-    if (!recommendedFacilityName || facilities.length === 0) return;
-    const match = facilities.find(
-      (f) =>
-        f.name.toLowerCase().trim() ===
-        recommendedFacilityName.toLowerCase().trim(),
+    if (!recommendedHospitalName || hospitals.length === 0) return;
+    const match = hospitals.find(
+      (h) =>
+        h.name.toLowerCase().trim() ===
+        recommendedHospitalName.toLowerCase().trim(),
     );
     if (match) {
-      setToFacility(String(match.id));
+      setFromHospital(String(match.id));
     }
-  }, [recommendedFacilityName, facilities]);
+  }, [recommendedHospitalName, hospitals]);
 
   useEffect(() => {
     if (!equipmentId) return;
-    const stillValid = filteredEquipment.some(
-      (e) => String(e.id) === equipmentId,
-    );
+    const stillValid = filteredEquipment.some((e) => String(e.id) === equipmentId);
     if (!stillValid) {
       setEquipmentId("");
     }
-  }, [fromFacility, equipmentId, filteredEquipment]);
-
-  useEffect(() => {
-    if (!toFacility) return;
-    if (toFacility === fromFacility) {
-      setToFacility("");
-    }
-  }, [fromFacility, toFacility]);
+  }, [fromHospital, equipmentId, filteredEquipment]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!equipmentId || !fromFacility || !toFacility || quantity < 1) {
+    if (!equipmentId || !fromHospital || quantity < 1) {
       toast({
         title: "Missing fields",
         description: "Please complete all required fields.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (fromFacility === toFacility) {
-      toast({
-        title: "Invalid facilities",
-        description: "From facility and to facility must be different.",
         variant: "destructive",
       });
       return;
@@ -139,26 +114,25 @@ const NewRequest = () => {
         method: "POST",
         body: JSON.stringify({
           equipment_id: Number(equipmentId),
+          from_hospital_id: Number(fromHospital),
           notes: notes.trim(),
-          from_facility: Number(fromFacility),
-          to_facility: Number(toFacility),
           quantity: Number(quantity),
         }),
       });
 
-      setLoading(false);
       toast({
         title: "Request Submitted",
         description: "Your equipment request has been sent successfully.",
       });
       navigate("/requests");
     } catch (err) {
-      setLoading(false);
       toast({
         title: "Error",
         description: (err as Error).message || "Failed to submit request",
         variant: "destructive",
       });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -166,7 +140,7 @@ const NewRequest = () => {
     <div className="max-w-2xl mx-auto">
       <PageHeader
         title="Request Equipment"
-        description="Submit a new equipment request to another facility"
+        description="Submit a new equipment request to another hospital"
       />
 
       <Card>
@@ -184,30 +158,15 @@ const NewRequest = () => {
           )}
           <form onSubmit={handleSubmit} className="space-y-5">
             <div className="grid gap-2">
-              <Label>From Facility</Label>
-              <Select value={fromFacility} onValueChange={setFromFacility}>
+              <Label>Source Hospital</Label>
+              <Select value={fromHospital} onValueChange={setFromHospital}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Choose source facility" />
+                  <SelectValue placeholder="Choose source hospital" />
                 </SelectTrigger>
                 <SelectContent>
-                  {facilities.map((f) => (
-                    <SelectItem key={f.id} value={String(f.id)}>
-                      {f.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="grid gap-2">
-              <Label>To Facility</Label>
-              <Select value={toFacility} onValueChange={setToFacility}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Choose destination facility" />
-                </SelectTrigger>
-                <SelectContent>
-                  {toFacilityOptions.map((f) => (
-                    <SelectItem key={f.id} value={String(f.id)}>
-                      {f.name}
+                  {hospitals.map((h) => (
+                    <SelectItem key={h.id} value={String(h.id)}>
+                      {h.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -219,9 +178,9 @@ const NewRequest = () => {
                 <SelectTrigger>
                   <SelectValue
                     placeholder={
-                      fromFacility
+                      fromHospital
                         ? "Choose equipment"
-                        : "Select from facility first"
+                        : "Select source hospital first"
                     }
                   />
                 </SelectTrigger>

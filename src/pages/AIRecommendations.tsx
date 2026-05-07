@@ -128,7 +128,7 @@ const AIRecommendations = () => {
             <Link to="/settings" className="text-primary underline-offset-4 hover:underline">
               Settings
             </Link>
-            . Enable &quot;AI Recommendations&quot; to load ranked facilities.
+            . Enable &quot;AI Recommendations&quot; to load ranked hospitals.
           </CardContent>
         </Card>
       )}
@@ -165,11 +165,9 @@ const AIRecommendations = () => {
 
       {!loading && enabled && !error && items.length === 0 && (
         <p className="text-sm text-muted-foreground py-4">
-          No directory facilities matched. Keyword search uses equipment names
-          (for example &quot;MRI Scanner&quot;) on the Equipment page, linked to
-          a facility that has latitude and longitude. Clear the keyword to list
-          nearby hospitals and labs instead, or add matching equipment in the
-          app.
+          No hospitals matched. Keyword search uses equipment names (for
+          example &quot;MRI Scanner&quot;). Clear the keyword to list nearby
+          hospitals, or add matching equipment in the app.
         </p>
       )}
 
@@ -217,7 +215,7 @@ const AIRecommendations = () => {
                 type="button"
                 onClick={() =>
                   navigate("/requests/new", {
-                    state: { recommendedFacilityName: rec.hospital },
+                    state: { recommendedHospitalName: rec.hospital },
                   })
                 }
               >

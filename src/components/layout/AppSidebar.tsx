@@ -8,9 +8,11 @@ import {
   UserCircle,
   Settings,
   Heart,
+  Users,
+  Shield,
+  FileText,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
-import { useLocation } from "react-router-dom";
 import {
   Sidebar,
   SidebarContent,
@@ -23,14 +25,16 @@ import {
   SidebarFooter,
   useSidebar,
 } from "@/components/ui/sidebar";
+import { useAuth } from "@/contexts/AuthContext";
 
 const mainItems = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
-  { title: "Facilities", url: "/facilities", icon: Building2 },
+  { title: "Hospitals", url: "/facilities", icon: Building2 },
   { title: "Equipment", url: "/equipment", icon: Stethoscope },
   { title: "Requests", url: "/requests", icon: ClipboardList },
   { title: "Map Locator", url: "/map", icon: MapPin },
   { title: "AI Recommendations", url: "/ai", icon: BrainCircuit },
+  { title: "Patients", url: "/patients", icon: FileText },
 ];
 
 const bottomItems = [
@@ -41,7 +45,15 @@ const bottomItems = [
 export function AppSidebar() {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
-  const location = useLocation();
+  const { user } = useAuth();
+
+  const roleItems: { title: string; url: string; icon: typeof LayoutDashboard }[] = [];
+  if (user?.role === "hospital_admin") {
+    roleItems.push({ title: "Team", url: "/team", icon: Users });
+  }
+  if (user?.role === "super_admin") {
+    roleItems.push({ title: "Admin", url: "/admin", icon: Shield });
+  }
 
   return (
     <Sidebar collapsible="icon">
@@ -60,7 +72,7 @@ export function AppSidebar() {
         <SidebarGroup>
           <SidebarGroupContent>
             <SidebarMenu>
-              {mainItems.map((item) => (
+              {[...mainItems, ...roleItems].map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
                     <NavLink
