@@ -24,6 +24,16 @@ import { useEffect, useState } from "react";
 import { apiFetch } from "@/lib/api";
 import { useNavigate } from "react-router-dom";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  ResponsiveContainer,
+  LineChart,
+  CartesianGrid,
+  XAxis,
+  YAxis,
+  Tooltip,
+  Legend,
+  Line,
+} from "recharts";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -33,6 +43,9 @@ const Dashboard = () => {
   const [pendingRequests, setPendingRequests] = useState(0);
   const [approvedRequests, setApprovedRequests] = useState(0);
   const [resultsSent, setResultsSent] = useState(0);
+  const [requestTrend, setRequestTrend] = useState<
+    { month: string; pending: number; approved: number; rejected: number }[]
+  >([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -58,6 +71,37 @@ const Dashboard = () => {
           (requestsData || []).filter((r: any) => r.status === "results-sent")
             .length,
         );
+        const now = new Date();
+        const buckets = new Map<
+          string,
+          { month: string; pending: number; approved: number; rejected: number }
+        >();
+        for (let i = 5; i >= 0; i -= 1) {
+          const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+          const key = `${d.getFullYear()}-${d.getMonth()}`;
+          buckets.set(key, {
+            month: d.toLocaleString(undefined, { month: "short" }),
+            pending: 0,
+            approved: 0,
+            rejected: 0,
+          });
+        }
+        for (const req of requestsData || []) {
+          if (!req?.created_at) continue;
+          const d = new Date(req.created_at);
+          if (Number.isNaN(d.getTime())) continue;
+          const key = `${d.getFullYear()}-${d.getMonth()}`;
+          const bucket = buckets.get(key);
+          if (!bucket) continue;
+          if (req.status === "approved" || req.status === "results-sent") {
+            bucket.approved += 1;
+          } else if (req.status === "rejected") {
+            bucket.rejected += 1;
+          } else {
+            bucket.pending += 1;
+          }
+        }
+        setRequestTrend(Array.from(buckets.values()));
       } catch {
         setRecentRequests([]);
         setTotalHospitals(0);
@@ -65,6 +109,7 @@ const Dashboard = () => {
         setPendingRequests(0);
         setApprovedRequests(0);
         setResultsSent(0);
+        setRequestTrend([]);
       } finally {
         setLoading(false);
       }
@@ -216,6 +261,45 @@ const Dashboard = () => {
           </CardContent>
         </Card>
       </div>
+          <Card className="shadow-sm">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-lg">Request Trend (6 months)</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="h-72 w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={requestTrend}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                    <XAxis dataKey="month" />
+                    <YAxis allowDecimals={false} />
+                    <Tooltip />
+                    <Legend />
+                    <Line
+                      type="monotone"
+                      dataKey="approved"
+                      stroke="hsl(var(--success))"
+                      strokeWidth={2}
+                      dot={false}
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="pending"
+                      stroke="hsl(var(--warning))"
+                      strokeWidth={2}
+                      dot={false}
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="rejected"
+                      stroke="hsl(var(--destructive))"
+                      strokeWidth={2}
+                      dot={false}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            </CardContent>
+          </Card>
         </>
       )}
     </div>
