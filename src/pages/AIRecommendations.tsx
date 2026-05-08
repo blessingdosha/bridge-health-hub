@@ -5,7 +5,6 @@ import {
   Stethoscope,
   ArrowRight,
   Sparkles,
-  Loader2,
   Search,
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
@@ -14,6 +13,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
 import { apiFetch } from "@/lib/api";
 import { getAiRecommendationsEnabled } from "@/lib/preferences";
 
@@ -114,15 +114,18 @@ const AIRecommendations = () => {
   }, [enabled, geoResolved, appliedEquipmentQ, load]);
 
   return (
-    <div>
-      <PageHeader title="AI Recommendations" description="Smart referral suggestions based on distance, linked equipment data, and site type">
+    <div className="space-y-6">
+      <PageHeader
+        title="AI Recommendations"
+        description="Smart referral suggestions based on distance, linked equipment data, and site type"
+      >
         <Badge variant="secondary" className="gap-1">
           <Sparkles className="h-3 w-3" /> Smart ranking
         </Badge>
       </PageHeader>
 
       {!enabled && (
-        <Card className="mb-4 border-muted">
+        <Card className="border-muted shadow-sm">
           <CardContent className="py-4 text-sm text-muted-foreground">
             Suggestions are turned off in{" "}
             <Link to="/settings" className="text-primary underline-offset-4 hover:underline">
@@ -135,13 +138,13 @@ const AIRecommendations = () => {
 
       <form
         onSubmit={onSearchSubmit}
-        className="mb-4 flex flex-col sm:flex-row gap-2 max-w-xl"
+        className="flex flex-col sm:flex-row gap-2 max-w-xl"
       >
         <div className="relative flex-1">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground pointer-events-none" />
           <Input
             placeholder="Filter by equipment keyword (e.g. MRI)"
-            className="pl-9"
+            className="pl-9 shadow-sm"
             value={equipmentInput}
             onChange={(e) => setEquipmentInput(e.target.value)}
             disabled={!enabled}
@@ -152,10 +155,18 @@ const AIRecommendations = () => {
         </Button>
       </form>
 
-      {loading && (
-        <div className="flex items-center gap-2 text-muted-foreground py-8">
-          <Loader2 className="h-5 w-5 animate-spin" />
-          Loading recommendations…
+      {loading && enabled && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {[1, 2, 3, 4, 5, 6].map((i) => (
+            <Card key={i}>
+              <CardContent className="p-6 space-y-3">
+                <Skeleton className="h-5 w-3/4" />
+                <Skeleton className="h-4 w-1/2" />
+                <Skeleton className="h-20 w-full rounded-lg" />
+                <Skeleton className="h-10 w-full rounded-md" />
+              </CardContent>
+            </Card>
+          ))}
         </div>
       )}
 
@@ -171,11 +182,12 @@ const AIRecommendations = () => {
         </p>
       )}
 
+      {!loading && items.length > 0 && (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {items.map((rec) => (
           <Card
             key={rec.id}
-            className="transition-all hover:shadow-lg hover:border-accent/40 flex flex-col"
+            className="transition-all hover:shadow-md hover:border-accent/40 flex flex-col overflow-hidden shadow-sm"
           >
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between gap-2">
@@ -225,6 +237,7 @@ const AIRecommendations = () => {
           </Card>
         ))}
       </div>
+      )}
     </div>
   );
 };

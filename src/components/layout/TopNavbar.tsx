@@ -32,7 +32,7 @@ export function TopNavbar() {
   const initials = initialsFromName(displayName);
 
   return (
-    <header className="h-14 border-b bg-card flex items-center justify-between px-4 gap-4 shrink-0">
+    <header className="sticky top-0 z-30 h-14 shrink-0 flex items-center justify-between gap-4 border-b border-border/60 bg-card/90 px-4 backdrop-blur-md supports-[backdrop-filter]:bg-card/75">
       <div className="flex items-center gap-3 min-w-0">
         <SidebarTrigger />
         <form

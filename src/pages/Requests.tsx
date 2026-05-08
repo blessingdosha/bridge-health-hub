@@ -22,6 +22,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Skeleton } from "@/components/ui/skeleton";
 import { apiFetch, apiDownloadBlob, apiUpload } from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
@@ -173,7 +174,7 @@ const Requests = () => {
   };
 
   return (
-    <div>
+    <div className="space-y-6">
       <PageHeader
         title="Request Tracking"
         description="Track and manage equipment requests"
@@ -207,7 +208,17 @@ const Requests = () => {
       </PageHeader>
 
       {loading && (
-        <p className="text-sm text-muted-foreground py-4">Loading requests…</p>
+        <div className="space-y-4">
+          {[1, 2, 3].map((i) => (
+            <Card key={i} className="overflow-hidden">
+              <CardContent className="p-6 space-y-3">
+                <Skeleton className="h-6 w-2/3 max-w-md" />
+                <Skeleton className="h-4 w-full max-w-xl" />
+                <Skeleton className="h-2 w-full rounded-full" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
       )}
       {error && !loading && (
         <p className="text-sm text-destructive py-2">{error}</p>
@@ -222,8 +233,9 @@ const Requests = () => {
           </Card>
         )}
 
-        {filtered.map((req) => (
-          <Card key={req.id}>
+        {!loading &&
+          filtered.map((req) => (
+          <Card key={req.id} className="overflow-hidden shadow-sm transition-shadow hover:shadow-md">
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between flex-wrap gap-2">
                 <CardTitle className="text-base">

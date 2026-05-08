@@ -22,7 +22,9 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
+import { Skeleton } from "@/components/ui/skeleton";
 import { apiFetch } from "@/lib/api";
+import { cn } from "@/lib/utils";
 
 const Equipment = () => {
   const [searchParams] = useSearchParams();
@@ -92,7 +94,7 @@ const Equipment = () => {
   };
 
   return (
-    <div>
+    <div className="space-y-6">
       <PageHeader
         title="Equipment"
         description="Manage equipment under your hospital"
@@ -121,7 +123,10 @@ const Equipment = () => {
                 <select
                   value={newType}
                   onChange={(e) => setNewType(e.target.value)}
-                  className="border rounded px-2 py-1"
+                  className={cn(
+                    "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm ring-offset-background",
+                    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1",
+                  )}
                 >
                   <option value="">Select type</option>
                   <option value="Respiratory">Respiratory</option>
@@ -138,7 +143,10 @@ const Equipment = () => {
                 <select
                   value={newAvailability}
                   onChange={(e) => setNewAvailability(e.target.value)}
-                  className="border rounded px-2 py-1"
+                  className={cn(
+                    "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm ring-offset-background",
+                    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1",
+                  )}
                 >
                   <option value="available">Available</option>
                   <option value="unavailable">Not Available</option>
@@ -152,12 +160,12 @@ const Equipment = () => {
         </Dialog>
       </PageHeader>
 
-      <div className="mb-4">
-        <div className="relative max-w-sm">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="relative w-full max-w-sm">
+          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground pointer-events-none" />
           <Input
             placeholder="Search equipment..."
-            className="pl-9"
+            className="pl-9 shadow-sm"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
@@ -165,13 +173,20 @@ const Equipment = () => {
       </div>
 
       {loading ? (
-        <div className="text-center py-8 text-muted-foreground">
-          Loading equipment...
-        </div>
-      ) : error ? (
-        <div className="text-center py-8 text-destructive">{error}</div>
-      ) : (
         <Card>
+          <CardContent className="p-6 space-y-4">
+            <Skeleton className="h-10 w-full rounded-md" />
+            <Skeleton className="h-10 w-full rounded-md" />
+            <Skeleton className="h-10 w-full rounded-md" />
+            <Skeleton className="h-10 w-full rounded-md" />
+          </CardContent>
+        </Card>
+      ) : error ? (
+        <Card>
+          <CardContent className="py-12 text-center text-destructive">{error}</CardContent>
+        </Card>
+      ) : (
+        <Card className="overflow-hidden shadow-sm">
           <CardContent className="p-0">
             <Table>
               <TableHeader>

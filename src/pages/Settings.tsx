@@ -75,7 +75,7 @@ const Settings = () => {
   };
 
   return (
-    <div className="max-w-2xl mx-auto">
+    <div className="max-w-2xl mx-auto space-y-6">
       <PageHeader title="Settings" description="Configure your preferences" />
 
       <div className="space-y-6">
