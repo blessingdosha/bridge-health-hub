@@ -5,6 +5,7 @@ import { PageHeader } from "@/components/shared/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
   TableBody,
@@ -45,18 +46,18 @@ const Facilities = () => {
   );
 
   return (
-    <div>
+    <div className="space-y-6">
       <PageHeader
         title="Hospitals"
         description="Browse approved hospitals in the application network"
       />
 
-      <div className="mb-4">
-        <div className="relative max-w-sm">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="relative w-full max-w-sm">
+          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground pointer-events-none" />
           <Input
             placeholder="Search hospitals..."
-            className="pl-9"
+            className="pl-9 shadow-sm"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
@@ -65,8 +66,11 @@ const Facilities = () => {
 
       {loading ? (
         <Card>
-          <CardContent className="py-12 text-center text-muted-foreground">
-            Loading hospitals...
+          <CardContent className="p-6 space-y-4">
+            <Skeleton className="h-10 w-full rounded-md" />
+            <Skeleton className="h-10 w-full rounded-md" />
+            <Skeleton className="h-10 w-full rounded-md" />
+            <Skeleton className="h-10 w-full rounded-md" />
           </CardContent>
         </Card>
       ) : error ? (
@@ -76,7 +80,7 @@ const Facilities = () => {
           </CardContent>
         </Card>
       ) : (
-        <Card>
+        <Card className="overflow-hidden shadow-sm">
           <CardContent className="p-0">
             {filtered.length === 0 ? (
               <EmptyState

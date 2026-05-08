@@ -23,6 +23,7 @@ import {
 import { useEffect, useState } from "react";
 import { apiFetch } from "@/lib/api";
 import { useNavigate } from "react-router-dom";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -32,9 +33,11 @@ const Dashboard = () => {
   const [pendingRequests, setPendingRequests] = useState(0);
   const [approvedRequests, setApprovedRequests] = useState(0);
   const [resultsSent, setResultsSent] = useState(0);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchDashboardData = async () => {
+      setLoading(true);
       try {
         const [hospitalsData, equipmentData, requestsData] = await Promise.all([
           apiFetch("/api/hospitals"),
@@ -62,6 +65,8 @@ const Dashboard = () => {
         setPendingRequests(0);
         setApprovedRequests(0);
         setResultsSent(0);
+      } finally {
+        setLoading(false);
       }
     };
     fetchDashboardData();
@@ -86,6 +91,38 @@ const Dashboard = () => {
         </Button>
       </PageHeader>
 
+      {loading ? (
+        <div className="space-y-6 animate-in fade-in duration-300">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {[1, 2, 3, 4].map((i) => (
+              <Card key={i}>
+                <CardContent className="p-5 space-y-3">
+                  <Skeleton className="h-3 w-28" />
+                  <Skeleton className="h-9 w-20" />
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            <Card className="lg:col-span-2">
+              <CardContent className="p-6 space-y-3">
+                <Skeleton className="h-5 w-40" />
+                <Skeleton className="h-48 w-full rounded-md" />
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="p-6 space-y-3">
+                <Skeleton className="h-5 w-36" />
+                <Skeleton className="h-14 w-full rounded-lg" />
+                <Skeleton className="h-14 w-full rounded-lg" />
+                <Skeleton className="h-14 w-full rounded-lg" />
+                <Skeleton className="h-10 w-full rounded-md" />
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      ) : (
+        <>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
           title="Hospitals in Network"
@@ -114,7 +151,7 @@ const Dashboard = () => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <Card className="lg:col-span-2">
+        <Card className="lg:col-span-2 shadow-sm">
           <CardHeader className="pb-3">
             <CardTitle className="text-lg">Recent Requests</CardTitle>
           </CardHeader>
@@ -156,22 +193,22 @@ const Dashboard = () => {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="shadow-sm">
           <CardHeader className="pb-3">
             <CardTitle className="text-lg">Request Pipeline</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="rounded-lg border p-3">
-              <p className="text-xs text-muted-foreground">Pending</p>
-              <p className="text-2xl font-semibold">{pendingRequests}</p>
+            <div className="rounded-xl border border-border/60 bg-muted/20 p-3 shadow-sm">
+              <p className="text-xs font-medium text-muted-foreground">Pending</p>
+              <p className="text-2xl font-semibold tabular-nums">{pendingRequests}</p>
             </div>
-            <div className="rounded-lg border p-3">
-              <p className="text-xs text-muted-foreground">Approved</p>
-              <p className="text-2xl font-semibold">{approvedRequests}</p>
+            <div className="rounded-xl border border-border/60 bg-muted/20 p-3 shadow-sm">
+              <p className="text-xs font-medium text-muted-foreground">Approved</p>
+              <p className="text-2xl font-semibold tabular-nums">{approvedRequests}</p>
             </div>
-            <div className="rounded-lg border p-3">
-              <p className="text-xs text-muted-foreground">Results Sent</p>
-              <p className="text-2xl font-semibold">{resultsSent}</p>
+            <div className="rounded-xl border border-border/60 bg-muted/20 p-3 shadow-sm">
+              <p className="text-xs font-medium text-muted-foreground">Results Sent</p>
+              <p className="text-2xl font-semibold tabular-nums">{resultsSent}</p>
             </div>
             <Button className="w-full gap-2" onClick={() => navigate("/requests")}>
               <ClipboardList className="h-4 w-4" /> Open Request Tracking
@@ -179,6 +216,8 @@ const Dashboard = () => {
           </CardContent>
         </Card>
       </div>
+        </>
+      )}
     </div>
   );
 };

@@ -105,8 +105,17 @@
     @apply border-border;
   }
 
+  html {
+    @apply scroll-smooth antialiased;
+  }
+
   body {
     @apply bg-background text-foreground font-sans;
     font-family: 'Inter', sans-serif;
+    text-rendering: optimizeLegibility;
+  }
+
+  ::selection {
+    @apply bg-primary/15 text-foreground;
   }
 }

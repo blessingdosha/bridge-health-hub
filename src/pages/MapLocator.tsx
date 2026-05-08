@@ -147,7 +147,7 @@ const MapLocator = () => {
   };
 
   return (
-    <div>
+    <div className="space-y-6">
       <PageHeader
         title="Map Locator"
         description="Approved hospitals in your network on an interactive map"
@@ -194,19 +194,19 @@ const MapLocator = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 h-[calc(100vh-12rem)] min-h-[420px]">
         <div className="lg:col-span-2 min-h-[320px]">
           {loading ? (
-            <div className="h-full min-h-[320px] rounded-lg border bg-muted/30 flex items-center justify-center gap-2 text-muted-foreground">
+            <div className="h-full min-h-[320px] rounded-xl border border-border/60 bg-muted/30 flex items-center justify-center gap-2 text-muted-foreground shadow-sm">
               <Loader2 className="h-6 w-6 animate-spin" />
               Loading map data…
             </div>
           ) : error ? (
-            <div className="h-full min-h-[320px] rounded-lg border border-destructive/40 bg-destructive/5 flex items-center justify-center text-sm text-destructive px-4 text-center">
+            <div className="h-full min-h-[320px] rounded-xl border border-destructive/30 bg-destructive/5 flex items-center justify-center text-sm text-destructive px-4 text-center shadow-sm">
               {error}
             </div>
           ) : (
             <FacilityMap
               markers={markers}
               userPosition={userPosition}
-              className="h-full w-full min-h-[320px] rounded-lg overflow-hidden border"
+              className="h-full w-full min-h-[320px] rounded-xl overflow-hidden border border-border/60 shadow-sm"
             />
           )}
         </div>

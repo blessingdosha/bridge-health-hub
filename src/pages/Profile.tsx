@@ -37,11 +37,10 @@ const Profile = () => {
   const role = user?.role || "";
 
   return (
-    <div className="max-w-2xl mx-auto">
+    <div className="max-w-2xl mx-auto space-y-6">
       <PageHeader title="Profile" description="Manage your account information" />
 
-      <div className="space-y-6">
-        <Card>
+      <Card className="shadow-sm">
           <CardHeader>
             <CardTitle>Personal Information</CardTitle>
           </CardHeader>
@@ -79,7 +78,7 @@ const Profile = () => {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="shadow-sm">
           <CardHeader>
             <CardTitle>Hospital affiliation</CardTitle>
           </CardHeader>
@@ -111,7 +110,6 @@ const Profile = () => {
             </p>
           </CardContent>
         </Card>
-      </div>
     </div>
   );
 };

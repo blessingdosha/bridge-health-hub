@@ -2,10 +2,11 @@ import { useEffect, useMemo, useState } from "react";
 import { Send } from "lucide-react";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Select,
   SelectContent,
@@ -137,22 +138,29 @@ const NewRequest = () => {
   };
 
   return (
-    <div className="max-w-2xl mx-auto">
+    <div className="max-w-2xl mx-auto space-y-6">
       <PageHeader
         title="Request Equipment"
         description="Submit a new equipment request to another hospital"
       />
 
-      <Card>
+      <Card className="shadow-sm">
         <CardHeader>
           <CardTitle>Equipment Request Form</CardTitle>
+          <CardDescription>
+            Choose the source hospital and equipment. Your hospital is the destination automatically.
+          </CardDescription>
         </CardHeader>
         <CardContent>
-          {bootstrapLoading && (
-            <p className="text-sm text-muted-foreground mb-4">
-              Loading form data...
-            </p>
-          )}
+          {bootstrapLoading ? (
+            <div className="space-y-4">
+              <Skeleton className="h-10 w-full rounded-md" />
+              <Skeleton className="h-10 w-full rounded-md" />
+              <Skeleton className="h-10 w-full rounded-md" />
+              <Skeleton className="h-24 w-full rounded-md" />
+            </div>
+          ) : (
+          <>
           {bootstrapError && (
             <p className="text-sm text-destructive mb-4">{bootstrapError}</p>
           )}
@@ -211,7 +219,11 @@ const NewRequest = () => {
                 rows={4}
               />
             </div>
-            <Button type="submit" className="w-full" disabled={loading}>
+            <Button
+              type="submit"
+              className="w-full"
+              disabled={loading || bootstrapLoading}
+            >
               {loading ? (
                 "Submitting..."
               ) : (
@@ -221,6 +233,8 @@ const NewRequest = () => {
               )}
             </Button>
           </form>
+          </>
+          )}
         </CardContent>
       </Card>
     </div>

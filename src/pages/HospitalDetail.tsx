@@ -4,6 +4,7 @@ import { ArrowLeft, Stethoscope, UserRound } from "lucide-react";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { apiFetch } from "@/lib/api";
 
 const HospitalDetail = () => {
@@ -30,9 +31,11 @@ const HospitalDetail = () => {
   }, [id]);
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <PageHeader
-        title={detail?.name || "Hospital Details"}
+        title={
+          loading ? "Hospital Details" : detail?.name || "Hospital Details"
+        }
         description="Hospital profile, equipment inventory, and doctors"
       >
         <Button variant="outline" size="sm" asChild>
@@ -42,12 +45,36 @@ const HospitalDetail = () => {
         </Button>
       </PageHeader>
 
-      {loading && <p className="text-sm text-muted-foreground">Loading details…</p>}
-      {error && <p className="text-sm text-destructive">{error}</p>}
+      {loading && (
+        <div className="space-y-4">
+          <Card>
+            <CardContent className="p-6 space-y-3">
+              <Skeleton className="h-5 w-48" />
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-full" />
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-6 space-y-3">
+              <Skeleton className="h-5 w-40" />
+              <Skeleton className="h-4 w-full" />
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-6 space-y-3">
+              <Skeleton className="h-5 w-36" />
+              <Skeleton className="h-4 w-full" />
+            </CardContent>
+          </Card>
+        </div>
+      )}
+      {error && !loading && (
+        <p className="text-sm text-destructive">{error}</p>
+      )}
 
       {!loading && !error && detail && (
         <>
-          <Card>
+          <Card className="shadow-sm">
             <CardHeader className="pb-2">
               <CardTitle className="text-base">Hospital Profile</CardTitle>
             </CardHeader>
@@ -79,7 +106,7 @@ const HospitalDetail = () => {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="shadow-sm">
             <CardHeader className="pb-2">
               <CardTitle className="text-base flex items-center gap-2">
                 <Stethoscope className="h-4 w-4" />
@@ -100,7 +127,7 @@ const HospitalDetail = () => {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="shadow-sm">
             <CardHeader className="pb-2">
               <CardTitle className="text-base flex items-center gap-2">
                 <UserRound className="h-4 w-4" />

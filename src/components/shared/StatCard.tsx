@@ -13,7 +13,12 @@ interface StatCardProps {
 
 export function StatCard({ title, value, icon: Icon, trend, className, iconClassName }: StatCardProps) {
   return (
-    <Card className={cn("transition-shadow hover:shadow-md", className)}>
+    <Card
+      className={cn(
+        "transition-[box-shadow,transform] duration-200 hover:shadow-md hover:-translate-y-0.5",
+        className,
+      )}
+    >
       <CardContent className="p-5">
         <div className="flex items-center justify-between">
           <div className="space-y-1">
