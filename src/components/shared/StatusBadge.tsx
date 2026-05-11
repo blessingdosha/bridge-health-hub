@@ -1,6 +1,15 @@
 import { cn } from "@/lib/utils";
 
-type Status = "pending" | "approved" | "rejected" | "available" | "in-use" | "maintenance" | "results-sent";
+type Status =
+  | "pending"
+  | "approved"
+  | "rejected"
+  | "available"
+  | "in-use"
+  | "maintenance"
+  | "results-sent"
+  | "reserved"
+  | "booked";
 
 const statusStyles: Record<Status, string> = {
   pending: "bg-warning/15 text-warning border-warning/30",
@@ -10,14 +19,19 @@ const statusStyles: Record<Status, string> = {
   "in-use": "bg-accent/15 text-accent border-accent/30",
   maintenance: "bg-warning/15 text-warning border-warning/30",
   "results-sent": "bg-primary/15 text-primary border-primary/30",
+  reserved: "bg-muted text-muted-foreground border-border",
+  booked: "bg-accent/15 text-accent border-accent/30",
 };
 
 interface StatusBadgeProps {
   status: Status;
+  /** Override visible label (status still drives colors). */
+  label?: string;
   className?: string;
 }
 
-export function StatusBadge({ status, className }: StatusBadgeProps) {
+export function StatusBadge({ status, label, className }: StatusBadgeProps) {
+  const text = label ?? status.replace("-", " ");
   return (
     <span
       className={cn(
@@ -26,7 +40,7 @@ export function StatusBadge({ status, className }: StatusBadgeProps) {
         className
       )}
     >
-      {status.replace("-", " ")}
+      {text}
     </span>
   );
 }

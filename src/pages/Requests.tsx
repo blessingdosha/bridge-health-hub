@@ -41,6 +41,7 @@ type EquipmentRequestRow = {
   quantity: number;
   created_at?: string;
   patient_visit_at?: string | null;
+  equipment_booking_end_at?: string | null;
   patient_visit_instructions?: string | null;
   from_facility_hospital_id?: number | null;
   to_facility_hospital_id?: number | null;
@@ -227,14 +228,14 @@ const Requests = () => {
   ) => {
     setDecisioningId(reqId);
     try {
-      await apiFetch(`/api/requests/${reqId}`, {
+      const res = (await apiFetch(`/api/requests/${reqId}`, {
         method: "PATCH",
         body: JSON.stringify({
           status,
           rejection_reason:
             status === "rejected" ? rejectionReason.trim() || null : null,
         }),
-      });
+      })) as { warning?: string };
       await refresh();
       toast({
         title: status === "approved" ? "Request approved" : "Request rejected",
@@ -243,6 +244,12 @@ const Requests = () => {
             ? "The requesting hospital can proceed to patient visit scheduling."
             : "The request status has been updated to rejected.",
       });
+      if (res.warning) {
+        toast({
+          title: "Approval note",
+          description: res.warning,
+        });
+      }
       if (status === "rejected") {
         setRejectingId(null);
         setRejectionReason("");
@@ -535,6 +542,19 @@ const Requests = () => {
                   {req.patient_visit_instructions ? (
                     <p className="mt-2 text-foreground/90">
                       {req.patient_visit_instructions}
+                    </p>
+                  ) : null}
+                  {req.equipment_booking_end_at ? (
+                    <p className="mt-2 text-xs text-muted-foreground">
+                      Equipment available again on the network from{" "}
+                      {new Date(req.equipment_booking_end_at).toLocaleString(
+                        undefined,
+                        {
+                          dateStyle: "medium",
+                          timeStyle: "short",
+                        },
+                      )}
+                      .
                     </p>
                   ) : null}
                 </div>

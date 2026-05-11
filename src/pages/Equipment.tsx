@@ -25,6 +25,40 @@ import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { apiFetch } from "@/lib/api";
 import { cn } from "@/lib/utils";
+import type { ComponentProps } from "react";
+
+function catalogStatus(item: {
+  availability?: boolean;
+  status?: string;
+}): ComponentProps<typeof StatusBadge>["status"] {
+  if (typeof item.availability === "boolean") {
+    return item.availability ? "available" : "maintenance";
+  }
+  return item.status === "maintenance" ? "maintenance" : "available";
+}
+
+/** Backend-enriched fields when supported (safe no-ops otherwise). */
+function networkAvailabilityNote(item: Record<string, unknown>): string | null {
+  const na = item.network_availability as string | undefined;
+  if (!na || na === "open") return null;
+  if (na === "reserved") {
+    return "Reserved on the network until the approved booking has a visit and release time.";
+  }
+  if (na === "booked") {
+    const until = item.network_available_from as string | undefined;
+    if (until) {
+      return `Booked on the network until ${new Date(until).toLocaleString(undefined, {
+        dateStyle: "medium",
+        timeStyle: "short",
+      })}.`;
+    }
+    return "Booked on the network.";
+  }
+  if (na === "maintenance") {
+    return "Unavailable on the network.";
+  }
+  return null;
+}
 
 const Equipment = () => {
   const [searchParams] = useSearchParams();
@@ -218,15 +252,14 @@ const Equipment = () => {
                     </TableCell>
                     <TableCell>{item.quantity}</TableCell>
                     <TableCell>
-                      <StatusBadge
-                        status={
-                          typeof item.availability === "boolean"
-                            ? item.availability
-                              ? "available"
-                              : "maintenance"
-                            : item.status || "available"
-                        }
-                      />
+                      <div className="flex flex-col gap-1 max-w-[260px]">
+                        <StatusBadge status={catalogStatus(item)} />
+                        {networkAvailabilityNote(item) ? (
+                          <span className="text-xs text-muted-foreground leading-snug">
+                            {networkAvailabilityNote(item)}
+                          </span>
+                        ) : null}
+                      </div>
                     </TableCell>
                     <TableCell>
                       <div className="flex gap-1">

@@ -111,7 +111,7 @@ const NewRequest = () => {
 
     setLoading(true);
     try {
-      await apiFetch("/api/requests/", {
+      const res = (await apiFetch("/api/requests/", {
         method: "POST",
         body: JSON.stringify({
           equipment_id: Number(equipmentId),
@@ -119,12 +119,18 @@ const NewRequest = () => {
           notes: notes.trim(),
           quantity: Number(quantity),
         }),
-      });
+      })) as { warning?: string };
 
       toast({
         title: "Request Submitted",
         description: "Your equipment request has been sent successfully.",
       });
+      if (res.warning) {
+        toast({
+          title: "Availability note",
+          description: res.warning,
+        });
+      }
       navigate("/requests");
     } catch (err) {
       toast({
