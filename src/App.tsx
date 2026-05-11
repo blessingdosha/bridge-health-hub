@@ -18,6 +18,7 @@ import AIRecommendations from "./pages/AIRecommendations";
 import Profile from "./pages/Profile";
 import Settings from "./pages/Settings";
 import Auth from "./pages/Auth";
+import Landing from "./pages/Landing";
 import NotFound from "./pages/NotFound";
 import ChangePassword from "./pages/ChangePassword";
 import Team from "./pages/Team";
@@ -36,6 +37,7 @@ const App = () => (
       <BrowserRouter>
         <AuthProvider>
           <Routes>
+            <Route path="/" element={<Landing />} />
             <Route path="/auth" element={<Auth />} />
             <Route
               path="/change-password"

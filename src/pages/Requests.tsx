@@ -7,6 +7,8 @@ import {
   CalendarClock,
   Download,
   Plus,
+  ThumbsUp,
+  ThumbsDown,
 } from "lucide-react";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { StatusBadge } from "@/components/shared/StatusBadge";
@@ -39,6 +41,7 @@ type EquipmentRequestRow = {
   quantity: number;
   created_at?: string;
   patient_visit_at?: string | null;
+  equipment_booking_end_at?: string | null;
   patient_visit_instructions?: string | null;
   from_facility_hospital_id?: number | null;
   to_facility_hospital_id?: number | null;
@@ -47,14 +50,6 @@ type EquipmentRequestRow = {
   result_attachment?: string | null;
   has_clinical_result?: boolean;
 };
-
-function reportAvailable(row: EquipmentRequestRow) {
-  return !!(
-    row.patient_visit_at ||
-    row.result_diagnosis_findings ||
-    row.result_notes_report
-  );
-}
 
 const Requests = () => {
   const { toast } = useToast();
@@ -68,6 +63,9 @@ const Requests = () => {
   const [resultNotes, setResultNotes] = useState("");
   const [resultDiagnosis, setResultDiagnosis] = useState("");
   const [resultFile, setResultFile] = useState<File | null>(null);
+  const [decisioningId, setDecisioningId] = useState<number | null>(null);
+  const [rejectingId, setRejectingId] = useState<number | null>(null);
+  const [rejectionReason, setRejectionReason] = useState("");
 
   const refresh = useCallback(async () => {
     const data = (await apiFetch("/api/requests/")) as EquipmentRequestRow[];
@@ -90,17 +88,53 @@ const Requests = () => {
   }, [refresh]);
 
   const uid = user?.hospital_id != null ? Number(user.hospital_id) : null;
+  const isDoctorSide =
+    user?.role === "physician" || user?.role === "hospital_admin";
 
   const canScheduleVisit = (req: EquipmentRequestRow) => {
     if (req.status !== "approved" && req.status !== "results-sent") {
       return false;
     }
+    if (!isDoctorSide) return false;
+    const from = req.from_facility_hospital_id != null
+      ? Number(req.from_facility_hospital_id)
+      : null;
+    if (uid == null || from == null) return false;
+    return uid === from;
+  };
+
+  const canDecideRequest = (req: EquipmentRequestRow) => {
+    if (req.status !== "pending") return false;
+    if (!isDoctorSide) return false;
+    const from = req.from_facility_hospital_id != null
+      ? Number(req.from_facility_hospital_id)
+      : null;
+    if (uid == null || from == null) return false;
+    return uid === from;
+  };
+
+  const canSendResults = (req: EquipmentRequestRow) => {
+    if (req.status !== "approved" && req.status !== "results-sent") {
+      return false;
+    }
+    if (!isDoctorSide) return false;
+    const from = req.from_facility_hospital_id != null
+      ? Number(req.from_facility_hospital_id)
+      : null;
+    if (uid == null || from == null) return false;
+    return uid === from;
+  };
+
+  const canDownloadActions = (req: EquipmentRequestRow) => {
+    if (!isDoctorSide) return false;
+    const from = req.from_facility_hospital_id != null
+      ? Number(req.from_facility_hospital_id)
+      : null;
     const to = req.to_facility_hospital_id != null
       ? Number(req.to_facility_hospital_id)
       : null;
-    if (user?.role === "super_admin") return true;
-    if (uid == null || to == null) return false;
-    return uid === to;
+    if (uid == null) return false;
+    return uid === from || uid === to;
   };
 
   const filtered =
@@ -158,18 +192,76 @@ const Requests = () => {
     setResultFile(null);
   };
 
-  const handleDownloadReport = async (reqId: number) => {
+  const handleDownloadVisitSummary = async (reqId: number) => {
     try {
       await apiDownloadBlob(
-        `/api/requests/${reqId}/report`,
-        `medbridge-request-${reqId}-report.txt`,
+        `/api/requests/${reqId}/visit-summary`,
+        `medbridge-request-${reqId}-visit-summary.txt`,
       );
     } catch (e) {
       toast({
-        title: "Download failed",
+        title: "Visit summary download failed",
         description: (e as Error).message,
         variant: "destructive",
       });
+    }
+  };
+
+  const handleDownloadClinicalResult = async (reqId: number) => {
+    try {
+      await apiDownloadBlob(
+        `/api/requests/${reqId}/clinical-result`,
+        `medbridge-request-${reqId}-clinical-result.txt`,
+      );
+    } catch (e) {
+      toast({
+        title: "Clinical result download failed",
+        description: (e as Error).message,
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleDecision = async (
+    reqId: number,
+    status: "approved" | "rejected",
+  ) => {
+    setDecisioningId(reqId);
+    try {
+      const res = (await apiFetch(`/api/requests/${reqId}`, {
+        method: "PATCH",
+        body: JSON.stringify({
+          status,
+          rejection_reason:
+            status === "rejected" ? rejectionReason.trim() || null : null,
+        }),
+      })) as { warning?: string };
+      await refresh();
+      toast({
+        title: status === "approved" ? "Request approved" : "Request rejected",
+        description:
+          status === "approved"
+            ? "The requesting hospital can proceed to patient visit scheduling."
+            : "The request status has been updated to rejected.",
+      });
+      if (res.warning) {
+        toast({
+          title: "Approval note",
+          description: res.warning,
+        });
+      }
+      if (status === "rejected") {
+        setRejectingId(null);
+        setRejectionReason("");
+      }
+    } catch (err) {
+      toast({
+        title: "Action failed",
+        description: (err as Error).message || "Could not update request status",
+        variant: "destructive",
+      });
+    } finally {
+      setDecisioningId(null);
     }
   };
 
@@ -177,7 +269,7 @@ const Requests = () => {
     <div className="space-y-6">
       <PageHeader
         title="Request Tracking"
-        description="Track and manage equipment requests"
+        description="Track and manage equipment requests. Clinical actions (approve/reject, schedule visit, send results, download report) are available on doctor-side accounts."
       >
         <div className="flex gap-1 flex-wrap items-center">
           <Button size="sm" className="gap-1.5 text-xs" asChild>
@@ -243,16 +335,92 @@ const Requests = () => {
                 </CardTitle>
                 <div className="flex items-center gap-2 flex-wrap justify-end">
                   <StatusBadge status={req.status} />
-                  {reportAvailable(req) && (
-                    <Button
-                      size="sm"
-                      variant="secondary"
-                      className="gap-1.5 text-xs"
-                      type="button"
-                      onClick={() => handleDownloadReport(req.id)}
-                    >
-                      <Download className="h-3.5 w-3.5" /> Report
-                    </Button>
+                  {canDecideRequest(req) && (
+                    <>
+                      <Button
+                        size="sm"
+                        className="gap-1.5 text-xs"
+                        type="button"
+                        onClick={() => handleDecision(req.id, "approved")}
+                        disabled={decisioningId === req.id}
+                      >
+                        <ThumbsUp className="h-3.5 w-3.5" />
+                        {decisioningId === req.id ? "Approving..." : "Approve"}
+                      </Button>
+                      {rejectingId === req.id ? (
+                        <div className="flex items-center gap-2">
+                          <Input
+                            value={rejectionReason}
+                            onChange={(e) => setRejectionReason(e.target.value)}
+                            placeholder="Reason (optional)"
+                            className="h-8 w-44 text-xs"
+                          />
+                          <Button
+                            size="sm"
+                            variant="destructive"
+                            className="gap-1.5 text-xs"
+                            type="button"
+                            onClick={() => handleDecision(req.id, "rejected")}
+                            disabled={decisioningId === req.id}
+                          >
+                            <ThumbsDown className="h-3.5 w-3.5" />
+                            {decisioningId === req.id ? "Rejecting..." : "Confirm"}
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="text-xs"
+                            type="button"
+                            onClick={() => {
+                              setRejectingId(null);
+                              setRejectionReason("");
+                            }}
+                          >
+                            Cancel
+                          </Button>
+                        </div>
+                      ) : (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="gap-1.5 text-xs"
+                          type="button"
+                          onClick={() => {
+                            setRejectingId(req.id);
+                            setRejectionReason("");
+                          }}
+                          disabled={decisioningId === req.id}
+                        >
+                          <ThumbsDown className="h-3.5 w-3.5" /> Reject
+                        </Button>
+                      )}
+                    </>
+                  )}
+                  {canDownloadActions(req) && (
+                    <>
+                      {req.patient_visit_at && (
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          className="gap-1.5 text-xs"
+                          type="button"
+                          onClick={() => handleDownloadVisitSummary(req.id)}
+                        >
+                          <Download className="h-3.5 w-3.5" /> Download Visit Summary
+                        </Button>
+                      )}
+                      {req.has_clinical_result && (
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          className="gap-1.5 text-xs"
+                          type="button"
+                          onClick={() => handleDownloadClinicalResult(req.id)}
+                        >
+                          <Download className="h-3.5 w-3.5" /> Download Clinical Result
+                        </Button>
+                      )}
+                    </>
                   )}
                   {canScheduleVisit(req) && (
                     <Button size="sm" variant="outline" asChild>
@@ -265,8 +433,7 @@ const Requests = () => {
                       </Link>
                     </Button>
                   )}
-                  {(req.status === "approved" ||
-                    req.status === "results-sent") && (
+                  {canSendResults(req) && (
                     <Dialog
                       open={sendingId === req.id}
                       onOpenChange={(open) => {
@@ -375,6 +542,19 @@ const Requests = () => {
                   {req.patient_visit_instructions ? (
                     <p className="mt-2 text-foreground/90">
                       {req.patient_visit_instructions}
+                    </p>
+                  ) : null}
+                  {req.equipment_booking_end_at ? (
+                    <p className="mt-2 text-xs text-muted-foreground">
+                      Equipment available again on the network from{" "}
+                      {new Date(req.equipment_booking_end_at).toLocaleString(
+                        undefined,
+                        {
+                          dateStyle: "medium",
+                          timeStyle: "short",
+                        },
+                      )}
+                      .
                     </p>
                   ) : null}
                 </div>
